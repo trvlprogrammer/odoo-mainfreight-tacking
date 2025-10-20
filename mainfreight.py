@@ -125,29 +125,16 @@ def mf_get_tracking(region: str, service_type: str, reference: str) -> Tuple[Opt
     if not isinstance(data, list) or not data:
         return (None, None, None)
     item = data[0]
-
-    # tracking URL: prefer top-level trackingUrl, else first carrierReferences[].trackingUrl
-    tracking_url = item.get("trackingUrl")
-    if not tracking_url:
-        cr = item.get("carrierReferences") or []
-        if isinstance(cr, list) and cr:
-            tracking_url = (cr[0] or {}).get("trackingUrl")
-
-    # shipping method: prefer serviceType, else carrierReferences[].carrierName
-    shipping_method = item.get("serviceType")
-    if not shipping_method:
-        cr = item.get("carrierReferences") or []
-        if isinstance(cr, list) and cr:
-            shipping_method = (cr[0] or {}).get("carrierName")
-
-    # tracking number: prefer carrierReferences[].reference, else yourReference / trackingNumber / consignmentNumber
     tracking_number = None
+    tracking_url = None
+    shipping_method = None
+    # tracking URL: prefer top-level trackingUrl, else first carrierReferences[].trackingUrl
     cr = item.get("carrierReferences") or []
     if isinstance(cr, list) and cr:
+        tracking_url = (cr[0] or {}).get("trackingUrl")
+        shipping_method = (cr[0] or {}).get("carrierName")
         tracking_number = (cr[0] or {}).get("reference")
-    if not tracking_number:
-        tracking_number = item.get("yourReference") or item.get("trackingNumber") or item.get("consignmentNumber")
-
+    
     return (tracking_number, tracking_url, shipping_method)
 
 def first(seq):

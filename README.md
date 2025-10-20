@@ -8,5 +8,6 @@ How to setup
 4. Setup configuration "copy .env_copy to .env and adjust the value"
 5. Run script manually "python mainfreight.py"
 6. Setup system scheduler to run the script
+7. If you want to connect the log to google sheet, you need to download the google service account json file and put it in this folder and adjust the GSHEETS_SA_FILE configuration
 
 

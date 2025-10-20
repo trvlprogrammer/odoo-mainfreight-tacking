@@ -127,8 +127,10 @@ class GSheetsSink:
     def __init__(self, sa_file: str, spreadsheet_id: str, tab_name: str = "Logs", batch_size: int = 1):
         if gspread is None or Credentials is None:
             raise RuntimeError("gspread/google-auth not installed. Run: pip install gspread google-auth")
+        
+        SA_FILE_PATH = (Path(__file__).parent / sa_file).resolve()
         scopes = ["https://www.googleapis.com/auth/spreadsheets"]
-        self.creds = Credentials.from_service_account_file(sa_file, scopes=scopes)
+        self.creds = Credentials.from_service_account_file(str(SA_FILE_PATH), scopes=scopes)
         self.gc = gspread.authorize(self.creds)
         self.sh = self.gc.open_by_key(spreadsheet_id)
         self.ws = self._ensure_worksheet(tab_name)
@@ -192,40 +194,40 @@ def mf_get_tracking(region: str, service_type: str, reference: str) -> Tuple[Opt
     """
     headers = {"Authorization": f"Secret {MAINFREIGHT_API_KEY}", "Content-Type": "application/json"}
     params = {"serviceType": service_type, "reference": reference, "region": region}
-    # r = requests.get(MAINFREIGHT_BASE, params=params, headers=headers, timeout=HTTP_TIMEOUT)
-    # r.raise_for_status()
-    # data = r.json()
-    data = [
-      {
-        "ourReference": "44775816",
-        "yourReference": "JCA11425-217365",
-        "serviceType": "WarehousingCA",
-        "trackingUrl": "https://www.mainfreight.com/track/MIMSAMO/44775816",
-        "relatedItems": [],
-        "carrierReferences": [
-          {
-            "reference": "1ZE5E8142094546050",
-            "carrierName": "UPS",
-            "trackingUrl": "https://wwwapps.ups.com/tracking/tracking.cgi?tracknum=1ZE5E8142094546050"
-          }
-        ],
-        "events": [
-          {
-            "sequence": 0,
-            "eventDateTime": "2025-08-12T14:23:00",
-            "groupingLevel1Code": "Complete",
-            "groupingLevel2Code": "OrderComplete",
-            "code": "Complete",
-            "displayName": "Order Sent",
-            "isEstimate": False
-          }
-        ],
-        "relatedReferences": [],
-        "receiverReferences": [],
-        "senderReferences": [],
-        "containerReferences": []
-      }
-    ]
+    r = requests.get(MAINFREIGHT_BASE, params=params, headers=headers, timeout=HTTP_TIMEOUT)
+    r.raise_for_status()
+    data = r.json()
+    # data = [
+    #   {
+    #     "ourReference": "44775816",
+    #     "yourReference": "JCA11425-217365",
+    #     "serviceType": "WarehousingCA",
+    #     "trackingUrl": "https://www.mainfreight.com/track/MIMSAMO/44775816",
+    #     "relatedItems": [],
+    #     "carrierReferences": [
+    #       {
+    #         "reference": "1ZE5E8142094546050",
+    #         "carrierName": "UPS",
+    #         "trackingUrl": "https://wwwapps.ups.com/tracking/tracking.cgi?tracknum=1ZE5E8142094546050"
+    #       }
+    #     ],
+    #     "events": [
+    #       {
+    #         "sequence": 0,
+    #         "eventDateTime": "2025-08-12T14:23:00",
+    #         "groupingLevel1Code": "Complete",
+    #         "groupingLevel2Code": "OrderComplete",
+    #         "code": "Complete",
+    #         "displayName": "Order Sent",
+    #         "isEstimate": False
+    #       }
+    #     ],
+    #     "relatedReferences": [],
+    #     "receiverReferences": [],
+    #     "senderReferences": [],
+    #     "containerReferences": []
+    #   }
+    # ]
     if not isinstance(data, list) or not data:
         return (None, None, None, None)
     item = data[0]
